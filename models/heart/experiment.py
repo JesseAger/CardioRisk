@@ -111,20 +111,42 @@ def cross_validate_model(pipeline: Pipeline, X, y, cv):
     return summary
 
 
-def tune_threshold_for_recall(y_true, y_proba, target_recall=0.95):
+# def tune_threshold_for_recall(y_true, y_proba, target_recall=0.95):
+#     """
+#     Find the lowest threshold that achieves at least target_recall (if possible).
+#     If not achievable, return default 0.5.
+#     """
+#     precision, recall, thresholds = precision_recall_curve(y_true, y_proba)
+#     # precision_recall_curve returns thresholds of length n-1
+#     # recall/precision are length n
+#     best_thresh = 0.5
+#     for i in range(len(thresholds)):
+#         if recall[i] >= target_recall:
+#             best_thresh = float(thresholds[i])
+#             break
+#     return best_thresh
+
+def tune_threshold_for_recall(y_true, y_proba, min_precision=0.75, target_recall=0.90):
     """
-    Find the lowest threshold that achieves at least target_recall (if possible).
-    If not achievable, return default 0.5.
+    Find a threshold that:
+    - keeps recall high (>= target_recall if possible)
+    - BUT also keeps precision reasonable (>= min_precision)
     """
+
+    from sklearn.metrics import precision_recall_curve
+
     precision, recall, thresholds = precision_recall_curve(y_true, y_proba)
-    # precision_recall_curve returns thresholds of length n-1
-    # recall/precision are length n
-    best_thresh = 0.5
+
+    best_thresh = 0.5  # default
+
     for i in range(len(thresholds)):
-        if recall[i] >= target_recall:
+        if recall[i] >= target_recall and precision[i] >= min_precision:
             best_thresh = float(thresholds[i])
             break
+
     return best_thresh
+
+
 
 
 def main():
