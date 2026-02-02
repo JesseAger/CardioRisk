@@ -24,7 +24,7 @@ def load_data(use_only_cleveland: bool = True) -> pd.DataFrame:
     df["target"] = (df["num"] > 0).astype(int)
 
     # Dropping columns not used as predictors
-    df = df.drop(columns=["id", "num"])
+    df = df.drop(columns=["id", "num", "dataset"])
 
     return df
 
