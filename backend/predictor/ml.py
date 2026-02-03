@@ -51,10 +51,6 @@ class HeartModelService:
         # Build single-row dict in correct feature order
         row = {f: payload[f] for f in cls._features}
 
-        # Pipeline expects a dataframe-like input; dict-of-lists works for sklearn
-        # X = {k: [v] for k, v in row.items()}
-
-        # proba = float(cls._pipeline.predict_proba(X)[0][1])
         X = pd.DataFrame([row])
 
         proba = float(cls._pipeline.predict_proba(X)[0][1])
