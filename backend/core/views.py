@@ -41,7 +41,7 @@ class PatientVitalsViewSet(viewsets.ModelViewSet):
     def predict_heart(self, request, pk=None):
         patient = self.get_object()
 
-            # Optional vitals linking
+        # Optional: link to a vitals row
         vitals_id = request.data.get("vitals_id")
         vitals_obj = None
         if vitals_id is not None:
@@ -53,7 +53,7 @@ class PatientVitalsViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        # Run ML prediction using the same required fields as /api/predict-heart/
+        # Run prediction (expects the 13 model fields in request.data)
         try:
             result = HeartModelService.predict(request.data)
         except Exception as e:
