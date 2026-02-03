@@ -1,47 +1,28 @@
-# from rest_framework import viewsets
-# from .models import Patient, PatientVitals, Doctor
-# from .serializers import PatientSerializer, PatientVitalsSerializer, DoctorSerializer
-
-
-# class PatientViewSet(viewsets.ModelViewSet):
-#     queryset = Patient.objects.all().order_by("-created_at")
-#     serializer_class = PatientSerializer
-
-
-# class PatientVitalsViewSet(viewsets.ModelViewSet):
-#     queryset = PatientVitals.objects.select_related("patient").all().order_by("-recorded_at")
-#     serializer_class = PatientVitalsSerializer
-
-
-# class DoctorViewSet(viewsets.ModelViewSet):
-#     queryset = Doctor.objects.all().order_by("-created_at")
-#     serializer_class = DoctorSerializer
-
-
 from rest_framework import viewsets
-from .models import Patient, PatientVitals, Doctor
-from .serializers import PatientSerializer, PatientVitalsSerializer, DoctorSerializer, HeartPredictionSerializer
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.decorators import action
+
 from predictor.ml import HeartModelService
-from .models import HeartPrediction
+
+from .models import Patient, PatientVitals, Doctor, HeartPrediction
+from .serializers import (
+    PatientSerializer,
+    PatientVitalsSerializer,
+    DoctorSerializer,
+    HeartPredictionSerializer,
+)
 
 
 class PatientViewSet(viewsets.ModelViewSet):
     queryset = Patient.objects.all().order_by("-created_at")
     serializer_class = PatientSerializer
 
-
-class PatientVitalsViewSet(viewsets.ModelViewSet):
-    queryset = PatientVitals.objects.select_related("patient").all().order_by("-recorded_at")
-    serializer_class = PatientVitalsSerializer
-
     @action(detail=True, methods=["post"], url_path="predict-heart")
     def predict_heart(self, request, pk=None):
-        patient = self.get_object()
+        patient = self.get_object()  # ✅ this is a Patient
 
-        # Optional: link to a vitals row
+        # Optional: link to a vitals row for this patient
         vitals_id = request.data.get("vitals_id")
         vitals_obj = None
         if vitals_id is not None:
@@ -53,7 +34,7 @@ class PatientVitalsViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        # Run prediction (expects the 13 model fields in request.data)
+        # Run prediction (expects the 13 ML fields in request.data)
         try:
             result = HeartModelService.predict(request.data)
         except Exception as e:
@@ -69,6 +50,10 @@ class PatientVitalsViewSet(viewsets.ModelViewSet):
         )
 
         return Response(HeartPredictionSerializer(pred).data, status=status.HTTP_201_CREATED)
+
+class PatientVitalsViewSet(viewsets.ModelViewSet):
+    queryset = PatientVitals.objects.select_related("patient").all().order_by("-recorded_at")
+    serializer_class = PatientVitalsSerializer
 
 class DoctorViewSet(viewsets.ModelViewSet):
     queryset = Doctor.objects.all().order_by("-created_at")
