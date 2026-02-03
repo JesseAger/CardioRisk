@@ -1,14 +1,13 @@
 import json
-from pathlib import Path
 import joblib
 import numpy as np
+import pandas as pd
+from django.conf import settings
+from pathlib import Path
 
-# Paths
-BASE_DIR = Path(__file__).resolve().parents[2]  # backend/
-PROJECT_ROOT = BASE_DIR.parent                 # CardioRisk/
+MODEL_PATH = Path(settings.PROJECT_ROOT) / "models" / "heart" / "artifacts" / "heart_model_pipeline.joblib"
+METRICS_PATH = Path(settings.PROJECT_ROOT) / "models" / "heart" / "artifacts" / "metrics.json"
 
-MODEL_PATH = PROJECT_ROOT / "models" / "heart" / "artifacts" / "heart_model_pipeline.joblib"
-METRICS_PATH = PROJECT_ROOT / "models" / "heart" / "artifacts" / "metrics.json"
 
 
 class HeartModelService:
@@ -53,7 +52,10 @@ class HeartModelService:
         row = {f: payload[f] for f in cls._features}
 
         # Pipeline expects a dataframe-like input; dict-of-lists works for sklearn
-        X = {k: [v] for k, v in row.items()}
+        # X = {k: [v] for k, v in row.items()}
+
+        # proba = float(cls._pipeline.predict_proba(X)[0][1])
+        X = pd.DataFrame([row])
 
         proba = float(cls._pipeline.predict_proba(X)[0][1])
         label = int(proba >= cls._threshold)
