@@ -1,6 +1,6 @@
 from django.urls import path
-from . import HeartPredictView
+from predictor.views import HeartPredictView
 
-urlPatterns = [
+urlpatterns = [
     path("predict-heart/", HeartPredictView.as_view(), name="predict-heart"),
 ]
