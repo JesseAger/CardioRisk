@@ -47,3 +47,29 @@ class PatientVitals(models.Model):
 
     def __str__(self):
         return f"Vitals for {self.patient} @ {self.recorded_at:%Y-%m-%d %H:%M}"
+
+class HeartPrediction(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="heart_predictions")
+
+    # Optional: link to a vitals record if you want
+    vitals = models.ForeignKey(
+        PatientVitals,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="heart_predictions"
+    )
+
+    # Raw model output
+    risk_probability = models.FloatField()
+    threshold = models.FloatField()
+    prediction = models.BooleanField(help_text="True=High risk, False=Low risk")
+
+    # Store the input used for this prediction (important for auditability)
+    input_payload = models.JSONField()
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        label = "High" if self.prediction else "Low"
+        return f"HeartPrediction({label}) for {self.patient} @ {self.created_at:%Y-%m-%d %H:%M}"

@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Patient, Doctor, PatientVitals
+from .models import Patient, Doctor, PatientVitals, HeartPrediction
+
 
 
 @admin.register(Patient)
@@ -19,4 +20,10 @@ class DoctorAdmin(admin.ModelAdmin):
 class PatientVitalsAdmin(admin.ModelAdmin):
     list_display = ("patient", "pulse", "temperature", "spo2", "recorded_at")
     list_filter = ("recorded_at",)
+    search_fields = ("patient__first_name", "patient__last_name", "patient__email")
+
+@admin.register(HeartPrediction)
+class HeartPredictionAdmin(admin.ModelAdmin):
+    list_display = ("patient", "prediction", "risk_probability", "threshold", "created_at")
+    list_filter = ("prediction", "created_at")
     search_fields = ("patient__first_name", "patient__last_name", "patient__email")
